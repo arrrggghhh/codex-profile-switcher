@@ -49,14 +49,4 @@ if [ "$index" -lt 0 ] || [ "$index" -ge "${#dirs[@]}" ]; then
   exit 1
 fi
 
-src="${dirs[$index]}/auth.json"
-if [ ! -f "$src" ]; then
-  echo "auth.json not found: $src"
-  exit 1
-fi
-
-mkdir -p "$HOME/.codex"
-cp "$src" "$HOME/.codex/auth.json"
-echo "Copied auth.json to ~/.codex/auth.json"
-
-CODEX_HOME="$HOME/.codex" exec codex "$@"
+CODEX_HOME="${dirs[$index]}" exec codex "$@"
