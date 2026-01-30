@@ -34,7 +34,16 @@ fi
 
 echo "Select a profile:"
 for i in "${!dirs[@]}"; do
-  printf "%d) %s\n" "$((i + 1))" "${dirs[$i]}"
+  note=""
+  note_file="${dirs[$i]}/.cps_note.txt"
+  if [ -f "$note_file" ]; then
+    IFS= read -r note < "$note_file" || true
+  fi
+  if [ -n "$note" ]; then
+    printf "%d) %s - %s\n" "$((i + 1))" "${dirs[$i]}" "$note"
+  else
+    printf "%d) %s\n" "$((i + 1))" "${dirs[$i]}"
+  fi
 done
 
 read -r -p "Enter number: " choice
