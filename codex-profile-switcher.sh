@@ -46,16 +46,36 @@ for i in "${!dirs[@]}"; do
   fi
 done
 
-read -r -p "Enter number: " choice
-if ! [[ "$choice" =~ ^[0-9]+$ ]]; then
-  echo "Invalid input: expected a number."
+read -r -p "Enter number (or N -> main): " choice
+
+mode="run"
+if [[ "$choice" =~ ^[[:space:]]*([0-9]+)[[:space:]]*$ ]]; then
+  selected="${BASH_REMATCH[1]}"
+elif [[ "$choice" =~ ^[[:space:]]*([0-9]+)[[:space:]]*-\>[[:space:]]*main[[:space:]]*$ ]]; then
+  selected="${BASH_REMATCH[1]}"
+  mode="copy_to_main"
+else
+  echo "Invalid input: expected a number or 'N -> main'."
   exit 1
 fi
 
-index=$((choice - 1))
+index=$((selected - 1))
 if [ "$index" -lt 0 ] || [ "$index" -ge "${#dirs[@]}" ]; then
   echo "Invalid selection."
   exit 1
+fi
+
+if [ "$mode" = "copy_to_main" ]; then
+  target_dir="$HOME/.codex"
+  rm -rf -- "$target_dir"
+  mkdir -p -- "$target_dir"
+  if command -v rsync >/dev/null 2>&1; then
+    rsync -a -- "${dirs[$index]}/" "$target_dir/"
+  else
+    cp -R "${dirs[$index]}/." "$target_dir/"
+  fi
+  echo "Copied ${dirs[$index]} to $target_dir."
+  exit 0
 fi
 
 CODEX_HOME="${dirs[$index]}" exec codex "$@"
